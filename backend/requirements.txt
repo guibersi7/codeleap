@@ -1,5 +1,17 @@
-Django==5.2.5
-djangorestframework==3.16.1
-django-cors-headers==4.7.0
-djangorestframework-simplejwt==5.3.1
-python-decouple==3.8 
+# Core Django
+Django>=5.0.0,<6.0.0
+djangorestframework>=3.15.0,<4.0.0
+django-cors-headers>=4.3.0,<5.0.0
+djangorestframework-simplejwt>=5.3.0,<6.0.0
+Pillow>=10.0.0,<11.0.0
+gunicorn>=21.0.0,<22.0.0
+whitenoise>=6.6.0,<7.0.0
+psycopg2-binary>=2.9.0,<3.0.0
+
+# Environment and configuration
+python-decouple>=3.8,<4.0
+dj-database-url>=2.0.0,<3.0.0
+
+# Development dependencies (opcional)
+pytest>=7.4.0,<8.0.0
+pytest-django>=4.7.0,<5.0.0 

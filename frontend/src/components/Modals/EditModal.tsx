@@ -1,4 +1,6 @@
 import { ButtonLoadingSpinner } from "@/components/Loading/LoadingSpinner";
+import { Info, User } from "lucide-react";
+import { useState } from "react";
 
 interface EditModalProps {
   error: string | null;
@@ -21,13 +23,41 @@ export const EditModal = ({
   setEditTitle,
   setEditContent,
 }: EditModalProps) => {
+  const [showMentionHelp, setShowMentionHelp] = useState(false);
+
   return (
     <div
       className="fixed inset-0 flex items-center justify-center z-50 p-4"
       style={{ backgroundColor: "#777777CC" }}
     >
       <div className="bg-white rounded-lg p-6 max-w-md w-full">
-        <h3 className="text-lg font-bold text-gray-900 mb-4">Edit item</h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-bold text-gray-900">Edit item</h3>
+          <button
+            type="button"
+            onClick={() => setShowMentionHelp(!showMentionHelp)}
+            className="text-blue-600 hover:text-blue-800 transition-colors"
+            title="Como usar menções"
+          >
+            <Info size={18} />
+          </button>
+        </div>
+
+        {/* Ajuda sobre menções */}
+        {showMentionHelp && (
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-start gap-2">
+              <User size={14} className="text-blue-600 mt-0.5" />
+              <div className="text-xs text-blue-800">
+                <p className="font-medium mb-1">Como usar menções:</p>
+                <p>Use @username para mencionar outros usuários.</p>
+                <p className="text-xs mt-1 text-blue-700">
+                  Exemplo: "Olá @joao, o que você acha?"
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
@@ -58,7 +88,7 @@ export const EditModal = ({
             </label>
             <textarea
               name="content"
-              placeholder="Content"
+              placeholder="Content (use @username para mencionar usuários)"
               value={editContent}
               onChange={(e) => setEditContent(e.target.value)}
               rows={4}

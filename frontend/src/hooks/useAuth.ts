@@ -1,9 +1,10 @@
 "use client";
 
 import { ROUTES } from "@/app/routes";
-import { useAuth as useUserAuth } from "@/contexts/UserContext";
+import { useUser, useAuth as useUserAuth } from "@/contexts/UserContext";
+import { authApi, tokenStorage } from "@/lib/api";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export function useAuthGuard(requireAuth: boolean = true) {
   const { isAuthenticated, username, isHydrated } = useUserAuth();
@@ -21,17 +22,13 @@ export function useAuthGuard(requireAuth: boolean = true) {
   );
 
   useEffect(() => {
-    // Só executar após hidratação para evitar problemas de SSR
     if (!isHydrated) return;
 
-    // Reset flag quando as dependências mudam
     hasRedirected.current = false;
 
     if (requireAuth && !isAuthenticated) {
-      // Se precisa de autenticação mas não está autenticado, redirecionar para welcome
       redirect(ROUTES.WELCOME);
     } else if (!requireAuth && isAuthenticated) {
-      // Se não precisa de autenticação mas está autenticado, redirecionar para dashboard
       redirect(ROUTES.DASHBOARD);
     }
   }, [isAuthenticated, requireAuth, redirect, isHydrated]);
@@ -39,12 +36,192 @@ export function useAuthGuard(requireAuth: boolean = true) {
   return { isAuthenticated, username, isHydrated };
 }
 
-// Hook para proteger rotas que precisam de autenticação
 export function useRequireAuth() {
   return useAuthGuard(true);
 }
 
-// Hook para rotas que não devem ser acessadas quando autenticado
 export function useRequireNoAuth() {
   return useAuthGuard(false);
+}
+
+// Hook para autenticação com API
+export function useAuthApi() {
+  const { login: contextLogin, logout: contextLogout } = useUser();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Função de login com API
+  const login = useCallback(
+    async (username: string) => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const response = await authApi.login(username);
+
+        if (response.success) {
+          // Salvar tokens
+          tokenStorage.setTokens(
+            response.data.tokens.access,
+            response.data.tokens.refresh
+          );
+
+          // Atualizar contexto com os tokens
+          contextLogin(
+            response.data.user.username,
+            response.data.tokens.access,
+            response.data.tokens.refresh
+          );
+
+          return {
+            success: true,
+            user: response.data.user,
+            tokens: response.data.tokens,
+          };
+        } else {
+          throw new Error(response.message || "Erro no login");
+        }
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Erro desconhecido";
+        setError(errorMessage);
+        return {
+          success: false,
+          error: errorMessage,
+        };
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [contextLogin]
+  );
+
+  // Função de registro com API
+  const register = useCallback(
+    async (username: string) => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const response = await authApi.register(username);
+
+        if (response.success) {
+          // Salvar tokens
+          tokenStorage.setTokens(
+            response.data.tokens.access,
+            response.data.tokens.refresh
+          );
+
+          // Atualizar contexto com os tokens
+          contextLogin(
+            response.data.user.username,
+            response.data.tokens.access,
+            response.data.tokens.refresh
+          );
+
+          return {
+            success: true,
+            user: response.data.user,
+            tokens: response.data.tokens,
+          };
+        } else {
+          throw new Error(response.message || "Erro no registro");
+        }
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Erro desconhecido";
+        setError(errorMessage);
+        return {
+          success: false,
+          error: errorMessage,
+        };
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [contextLogin]
+  );
+
+  // Função de refresh token
+  const refreshToken = useCallback(async () => {
+    const refreshTokenValue = tokenStorage.getRefreshToken();
+
+    if (!refreshTokenValue) {
+      throw new Error("Refresh token não encontrado");
+    }
+
+    try {
+      const response = await authApi.refreshToken(refreshTokenValue);
+
+      if (response.success) {
+        // Atualizar access token
+        const currentRefresh = tokenStorage.getRefreshToken();
+        if (currentRefresh) {
+          tokenStorage.setTokens(response.data.access, currentRefresh);
+        }
+
+        return {
+          success: true,
+          accessToken: response.data.access,
+        };
+      } else {
+        throw new Error(response.message || "Erro ao renovar token");
+      }
+    } catch (err) {
+      // Se o refresh token expirou, fazer logout
+      if (
+        err instanceof Error &&
+        err.message.includes("Token is invalid or expired")
+      ) {
+        logout();
+      }
+      throw err;
+    }
+  }, []);
+
+  // Função de logout
+  const logout = useCallback(() => {
+    // Limpar tokens
+    tokenStorage.clearTokens();
+
+    // Limpar contexto
+    contextLogout();
+
+    // Limpar estado
+    setError(null);
+  }, [contextLogout]);
+
+  // Função para verificar se o token ainda é válido
+  const checkAuth = useCallback(async () => {
+    const accessToken = tokenStorage.getAccessToken();
+
+    if (!accessToken) {
+      return false;
+    }
+
+    try {
+      await authApi.getProfile(accessToken);
+      return true;
+    } catch (err) {
+      // Se o token expirou, tentar renovar
+      try {
+        await refreshToken();
+        return true;
+      } catch (refreshErr) {
+        // Se não conseguir renovar, fazer logout
+        logout();
+        return false;
+      }
+    }
+  }, [refreshToken, logout]);
+
+  return {
+    login,
+    register,
+    refreshToken,
+    logout,
+    checkAuth,
+    isLoading,
+    error,
+  };
 }

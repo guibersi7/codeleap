@@ -13,7 +13,6 @@ async function PostsContainer() {
       </Suspense>
     );
   } catch (error) {
-    console.error("Error fetching posts:", error);
     return (
       <div className="text-center py-8">
         <div className="text-red-600 mb-4">Failed to load posts</div>

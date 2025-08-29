@@ -23,7 +23,6 @@ export const formatTimeAgo = (dateString: string) => {
     const diffInDays = Math.floor(diffInHours / 24);
     return `${diffInDays} day${diffInDays > 1 ? "s" : ""} ago`;
   } catch (error) {
-    console.error("Error formatting time:", error);
     return "Unknown time";
   }
 };

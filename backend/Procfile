@@ -1,0 +1,1 @@
+web: gunicorn codeleap_backend.wsgi --log-file -
