@@ -25,7 +25,7 @@ export function getImageUrl(imagePath: string | null): string | null {
     return imagePath;
   }
   
-  // Se é um caminho relativo, adicionar a URL base
-  const baseUrl = getApiBaseUrl();
+  // Para imagens, sempre usar Railway porque o Django local não serve mídia
+  const baseUrl = 'https://codeleap-production.up.railway.app';
   return `${baseUrl}${imagePath}`;
 }
