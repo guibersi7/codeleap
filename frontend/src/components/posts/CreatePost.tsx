@@ -182,8 +182,7 @@ export function CreatePost() {
               />
             </div>
 
-            {/* Upload de imagem - Temporariamente desabilitado */}
-            {/*
+            {/* Upload de imagem */}
             <div>
               <label htmlFor="post-image" className="sr-only">
                 Post Image
@@ -196,12 +195,12 @@ export function CreatePost() {
                   accept="image/*"
                   onChange={handleImageSelect}
                   className="hidden"
-                  disabled={isSubmitting}
+                  disabled={isPending}
                 />
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  disabled={isSubmitting}
+                  disabled={isPending}
                   className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-gray-700"
                 >
                   <Image size={16} />
@@ -211,7 +210,7 @@ export function CreatePost() {
                   <button
                     type="button"
                     onClick={removeImage}
-                    disabled={isSubmitting}
+                    disabled={isPending}
                     className="flex items-center gap-2 px-3 py-2 border border-red-300 rounded-md hover:bg-red-50 transition-colors text-red-700"
                   >
                     <X size={16} />
@@ -220,11 +219,7 @@ export function CreatePost() {
                 )}
               </div>
 
-              <div className="text-sm text-gray-500 mt-1">
-                Upload de imagens temporariamente desabilitado
-              </div>
-
-              <Preview da imagem />
+              {/* Preview da imagem */}
               {imagePreview && (
                 <div className="mt-2 relative">
                   <img
@@ -235,7 +230,6 @@ export function CreatePost() {
                 </div>
               )}
             </div>
-            */}
 
             <div className="flex justify-end">
               <button

@@ -17,11 +17,11 @@ class Post(models.Model):
     created_datetime = models.DateTimeField(auto_now_add=True)
     title = models.CharField(max_length=200)
     content = models.TextField()
-    image = models.ImageField(
-        upload_to='posts/images/',
+    image = models.URLField(
+        max_length=500,
         null=True,
         blank=True,
-        help_text="Imagem do post (PNG, JPEG, JPG, GIF)"
+        help_text="URL da imagem do post (Cloudinary)"
     )
 
     class Meta:

@@ -202,7 +202,7 @@ export function PostCard({ post }: PostCardProps) {
           {post.image && (
             <div className="mb-4">
               <img
-                src={getImageUrl(post.image) ?? ""}
+                src={post.image}
                 alt="Post image"
                 className="max-w-full max-h-96 rounded-lg border border-gray-200"
                 loading="lazy"

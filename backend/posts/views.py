@@ -15,6 +15,7 @@ from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from django.contrib.auth import get_user_model
 from django.views.decorators.csrf import csrf_exempt
 import re
+from .utils import upload_image_to_cloudinary
 
 User = get_user_model()
 jwt_auth = JWTAuthentication()
@@ -111,7 +112,7 @@ def post_list(request):
                 'created_datetime': post.created_datetime.isoformat(),
                 'title': post.title,
                 'content': post.content,
-                'image': request.build_absolute_uri(post.image.url) if post.image else None,
+                'image': post.image if post.image else None,
                 'likes_count': post.likes_count,
                 'comments_count': post.comments_count,
                 'user_liked': user_liked
@@ -174,9 +175,20 @@ def post_list(request):
                 'username': username_from_token
             }
             
-            # Adicionar imagem se fornecida
+            # Processar imagem se fornecida
             if image:
-                post_data['image'] = image
+                try:
+                    # Upload para Cloudinary
+                    image_url = upload_image_to_cloudinary(image)
+                    post_data['image'] = image_url
+                    logger.info(f"Image uploaded to Cloudinary: {image_url}")
+                except Exception as e:
+                    logger.error(f"Error uploading image: {str(e)}")
+                    return HttpResponse(
+                        json.dumps({'error': f'Erro ao fazer upload da imagem: {str(e)}'}),
+                        content_type='application/json',
+                        status=500
+                    )
             
             post = Post.objects.create(**post_data)
             
@@ -193,7 +205,7 @@ def post_list(request):
                     'id': post.id,
                     'title': post.title,
                     'content': post.content,
-                    'image': request.build_absolute_uri(post.image.url) if post.image else None,
+                    'image': post.image if post.image else None,
                     'username': username_from_token,  # Retornar o username usado
                     'created_datetime': post.created_datetime.isoformat(),
                     'likes_count': 0,
