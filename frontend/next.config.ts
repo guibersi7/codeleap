@@ -2,10 +2,11 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   experimental: {
-    serverComponentsExternalPackages: [],
     // Melhorar hidratação
     optimizePackageImports: ["lucide-react"],
   },
+  // Configurações para Vercel
+  trailingSlash: false,
   // Garantir que cookies funcionem corretamente
   async headers() {
     return [
@@ -22,7 +23,6 @@ const nextConfig: NextConfig = {
   },
   // Configurações para melhorar a hidratação
   reactStrictMode: true,
-  swcMinify: true,
 };
 
 export default nextConfig;
