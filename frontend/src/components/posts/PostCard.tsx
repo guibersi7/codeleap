@@ -3,7 +3,6 @@
 import { postsApi } from "@/api/posts";
 import { useAuth } from "@/contexts/UserContext";
 import { usePostsOptimized } from "@/hooks/usePostsOptimized";
-import { getImageUrl } from "@/lib/utils";
 import { Comment, CreateCommentData, Post } from "@/types";
 import { formatTimeAgo } from "@/utils/formatTime";
 import { Edit, Heart, MessageCircle, Send, Trash2, User } from "lucide-react";

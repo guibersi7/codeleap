@@ -16,6 +16,7 @@ from django.contrib.auth import get_user_model
 from django.views.decorators.csrf import csrf_exempt
 import re
 from .utils import upload_image_to_cloudinary
+import os
 
 User = get_user_model()
 jwt_auth = JWTAuthentication()
@@ -178,6 +179,20 @@ def post_list(request):
             # Processar imagem se fornecida
             if image:
                 try:
+                    # Verificar se o Cloudinary está configurado
+                    from django.conf import settings
+                    cloud_name = os.getenv('CLOUDINARY_CLOUD_NAME')
+                    api_key = os.getenv('CLOUDINARY_API_KEY')
+                    api_secret = os.getenv('CLOUDINARY_API_SECRET')
+                    
+                    if not all([cloud_name, api_key, api_secret]):
+                        logger.warning("Cloudinary not configured - skipping image upload")
+                        return HttpResponse(
+                            json.dumps({'error': 'Upload de imagens temporariamente indisponível. Configure o Cloudinary primeiro.'}),
+                            content_type='application/json',
+                            status=400
+                        )
+                    
                     # Upload para Cloudinary
                     image_url = upload_image_to_cloudinary(image)
                     post_data['image'] = image_url

@@ -219,6 +219,10 @@ export function CreatePost() {
                 )}
               </div>
 
+              <div className="text-sm text-gray-500 mt-1">
+                💡 Configure o Cloudinary para habilitar upload de imagens
+              </div>
+
               {/* Preview da imagem */}
               {imagePreview && (
                 <div className="mt-2 relative">
