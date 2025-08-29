@@ -18,8 +18,18 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import JsonResponse
+
+def health_check(request):
+    """Endpoint simples para health check"""
+    return JsonResponse({
+        'status': 'ok',
+        'message': 'Server is running',
+        'timestamp': '2025-08-29T09:30:00Z'
+    })
 
 urlpatterns = [
+    path('', health_check, name='health_check'),  # Health check na raiz
     path('admin/', admin.site.urls),
     path('auth/', include('authentication.urls')),  # Endpoints de autenticação
     path('careers/', include('posts.urls')),  # API endpoints para posts
