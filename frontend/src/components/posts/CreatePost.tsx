@@ -220,7 +220,7 @@ export function CreatePost() {
               </div>
 
               <div className="text-sm text-gray-500 mt-1">
-                💡 Configure o Cloudinary para habilitar upload de imagens
+                📸 Selecione uma imagem para adicionar ao seu post
               </div>
 
               {/* Preview da imagem */}
