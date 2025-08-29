@@ -35,6 +35,5 @@ urlpatterns = [
     path('careers/', include('posts.urls')),  # API endpoints para posts
 ]
 
-# Configuração para servir arquivos de mídia em desenvolvimento
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Configuração para servir arquivos de mídia (desenvolvimento e produção)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
