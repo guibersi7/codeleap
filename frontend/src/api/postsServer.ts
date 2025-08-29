@@ -85,7 +85,7 @@ async function authenticatedRequest<T>(
     const cookieStore = await cookies();
     token = cookieStore.get("access_token")?.value || null;
   } catch (error) {
-    // Handle server-side cookie error
+    console.error("Error getting cookies:", error);
   }
 
   if (!token) {
