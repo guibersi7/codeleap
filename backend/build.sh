@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# Script de build para Railway
 echo "🚀 Iniciando build do Django..."
 
 # Instalar dependências
