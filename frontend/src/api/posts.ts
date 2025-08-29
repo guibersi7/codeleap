@@ -11,7 +11,8 @@ import {
 } from "@/types";
 import { getCookie } from "@/utils/cookies";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://codeleap-production.up.railway.app";
+// URL hardcoded para garantir que funcione na Vercel
+const API_BASE_URL = "https://codeleap-production.up.railway.app";
 
 // Tipos de resposta da API
 export interface PostsResponse {

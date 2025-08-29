@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://codeleap-production.up.railway.app";
+// URL hardcoded para garantir que funcione na Vercel
+const API_BASE_URL = "https://codeleap-production.up.railway.app";
 
 // Tipos
 export interface LoginRequest {

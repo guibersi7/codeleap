@@ -1,9 +1,12 @@
 import axios from "axios";
 import { getCookie } from "@/utils/cookies";
 
+// URL hardcoded para garantir que funcione na Vercel
+const API_BASE_URL = "https://codeleap-production.up.railway.app";
+
 // Configuração base do axios
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "https://codeleap-production.up.railway.app",
+  baseURL: API_BASE_URL,
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",

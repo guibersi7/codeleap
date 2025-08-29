@@ -1,7 +1,7 @@
 import { getCookie, removeCookie, setCookie } from "@/utils/cookies";
 
-// Configuração da API
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://codeleap-production.up.railway.app";
+// URL hardcoded para garantir que funcione na Vercel
+const API_BASE_URL = "https://codeleap-production.up.railway.app";
 
 // Tipos da API
 export interface LoginRequest {

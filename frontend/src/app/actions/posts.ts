@@ -4,6 +4,7 @@ import { CreatePostData, Post, UpdatePostData } from "@/types";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 
+// URL hardcoded para garantir que funcione na Vercel
 const API_BASE_URL = "https://codeleap-production.up.railway.app";
 
 // Função auxiliar para fazer requisições autenticadas
