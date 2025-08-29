@@ -24,20 +24,29 @@ class LoginSerializer(serializers.Serializer):
     def validate(self, attrs):
         username = attrs.get('username')
         
-        if username:
-            # Verificar se o usuário existe
-            try:
-                user = User.objects.get(username=username)
-                if not user.is_active:
-                    raise serializers.ValidationError("Conta desativada.")
-            except User.DoesNotExist:
-                # Criar usuário automaticamente se não existir
-                user = User.objects.create_user(username=username)
-            
-            attrs['user'] = user
-            return attrs
-        else:
+        if not username:
             raise serializers.ValidationError("Username é obrigatório.")
+        
+        # Limpar o username
+        username = username.strip()
+        if not username:
+            raise serializers.ValidationError("Username não pode estar vazio.")
+        
+        try:
+            # Verificar se o usuário existe
+            user = User.objects.get(username=username)
+            if not user.is_active:
+                raise serializers.ValidationError("Conta desativada.")
+        except User.DoesNotExist:
+            # Criar usuário automaticamente se não existir
+            try:
+                user = User.objects.create_user(username=username)
+            except Exception as e:
+                raise serializers.ValidationError(f"Erro ao criar usuário: {str(e)}")
+        
+        attrs['user'] = user
+        attrs['username'] = username
+        return attrs
 
 class RegisterSerializer(serializers.ModelSerializer):
     """

@@ -5,7 +5,13 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from django.utils import timezone
+from django.core.exceptions import ValidationError
+import logging
 from .serializers import LoginSerializer, RegisterSerializer, UserSerializer
+from django.conf import settings
+
+# Configurar logger
+logger = logging.getLogger(__name__)
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -14,35 +20,47 @@ def login_view(request):
     View para login de usuários
     Retorna tokens JWT para autenticação
     """
-    serializer = LoginSerializer(data=request.data)
-    
-    if serializer.is_valid():
-        user = serializer.validated_data['user']
+    try:
+        serializer = LoginSerializer(data=request.data)
         
-        # Atualizar último login
-        user.last_login = timezone.now()
-        user.save()
-        
-        # Gerar tokens JWT
-        refresh = RefreshToken.for_user(user)
-        
-        return Response({
-            'success': True,
-            'message': 'Login realizado com sucesso',
-            'data': {
-                'user': UserSerializer(user).data,
-                'tokens': {
-                    'access': str(refresh.access_token),
-                    'refresh': str(refresh),
+        if serializer.is_valid():
+            user = serializer.validated_data['user']
+            
+            # Atualizar último login
+            user.last_login = timezone.now()
+            user.save()
+            
+            # Gerar tokens JWT
+            refresh = RefreshToken.for_user(user)
+            
+            logger.info(f"Login bem-sucedido para usuário: {user.username}")
+            
+            return Response({
+                'success': True,
+                'message': 'Login realizado com sucesso',
+                'data': {
+                    'user': UserSerializer(user).data,
+                    'tokens': {
+                        'access': str(refresh.access_token),
+                        'refresh': str(refresh),
+                    }
                 }
-            }
-        }, status=status.HTTP_200_OK)
-    
-    return Response({
-        'success': False,
-        'message': 'Dados inválidos',
-        'errors': serializer.errors
-    }, status=status.HTTP_400_BAD_REQUEST)
+            }, status=status.HTTP_200_OK)
+        else:
+            logger.warning(f"Erro de validação no login: {serializer.errors}")
+            return Response({
+                'success': False,
+                'message': 'Dados inválidos',
+                'errors': serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+    except Exception as e:
+        logger.error(f"Erro interno no login: {str(e)}")
+        return Response({
+            'success': False,
+            'message': 'Erro interno do servidor',
+            'error': str(e) if settings.DEBUG else 'Erro interno'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -50,31 +68,43 @@ def register_view(request):
     """
     View para registro de usuários
     """
-    serializer = RegisterSerializer(data=request.data)
-    
-    if serializer.is_valid():
-        user = serializer.save()
+    try:
+        serializer = RegisterSerializer(data=request.data)
         
-        # Gerar tokens JWT automaticamente após registro
-        refresh = RefreshToken.for_user(user)
-        
-        return Response({
-            'success': True,
-            'message': 'Usuário registrado com sucesso',
-            'data': {
-                'user': UserSerializer(user).data,
-                'tokens': {
-                    'access': str(refresh.access_token),
-                    'refresh': str(refresh),
+        if serializer.is_valid():
+            user = serializer.save()
+            
+            # Gerar tokens JWT automaticamente após registro
+            refresh = RefreshToken.for_user(user)
+            
+            logger.info(f"Registro bem-sucedido para usuário: {user.username}")
+            
+            return Response({
+                'success': True,
+                'message': 'Usuário registrado com sucesso',
+                'data': {
+                    'user': UserSerializer(user).data,
+                    'tokens': {
+                        'access': str(refresh.access_token),
+                        'refresh': str(refresh),
+                    }
                 }
-            }
-        }, status=status.HTTP_201_CREATED)
-    
-    return Response({
-        'success': False,
-        'message': 'Dados inválidos',
-        'errors': serializer.errors
-    }, status=status.HTTP_400_BAD_REQUEST)
+            }, status=status.HTTP_201_CREATED)
+        else:
+            logger.warning(f"Erro de validação no registro: {serializer.errors}")
+            return Response({
+                'success': False,
+                'message': 'Dados inválidos',
+                'errors': serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+    except Exception as e:
+        logger.error(f"Erro interno no registro: {str(e)}")
+        return Response({
+            'success': False,
+            'message': 'Erro interno do servidor',
+            'error': str(e) if settings.DEBUG else 'Erro interno'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -104,6 +134,7 @@ def refresh_token_view(request):
         }, status=status.HTTP_200_OK)
         
     except Exception as e:
+        logger.error(f"Erro ao renovar token: {str(e)}")
         return Response({
             'success': False,
             'message': 'Token inválido ou expirado',
@@ -115,7 +146,15 @@ def user_profile_view(request):
     """
     View para obter perfil do usuário autenticado
     """
-    return Response({
-        'success': True,
-        'data': UserSerializer(request.user).data
-    }, status=status.HTTP_200_OK)
+    try:
+        return Response({
+            'success': True,
+            'data': UserSerializer(request.user).data
+        }, status=status.HTTP_200_OK)
+    except Exception as e:
+        logger.error(f"Erro ao obter perfil: {str(e)}")
+        return Response({
+            'success': False,
+            'message': 'Erro ao obter perfil',
+            'error': str(e) if settings.DEBUG else 'Erro interno'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
