@@ -13,6 +13,34 @@ from django.conf import settings
 # Configurar logger
 logger = logging.getLogger(__name__)
 
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def debug_view(request):
+    """
+    View para debug - verificar configurações
+    """
+    try:
+        debug_info = {
+            'debug': settings.DEBUG,
+            'allowed_hosts': settings.ALLOWED_HOSTS,
+            'database_engine': settings.DATABASES['default']['ENGINE'],
+            'installed_apps': list(settings.INSTALLED_APPS),
+            'middleware': list(settings.MIDDLEWARE),
+            'secret_key_configured': bool(settings.SECRET_KEY and settings.SECRET_KEY != 'django-insecure-development-key-change-in-production'),
+        }
+        
+        return Response({
+            'success': True,
+            'debug_info': debug_info
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Erro no debug view: {str(e)}")
+        return Response({
+            'success': False,
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_view(request):
@@ -21,6 +49,8 @@ def login_view(request):
     Retorna tokens JWT para autenticação
     """
     try:
+        logger.info(f"Tentativa de login com dados: {request.data}")
+        
         serializer = LoginSerializer(data=request.data)
         
         if serializer.is_valid():
