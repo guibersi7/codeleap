@@ -188,7 +188,7 @@ def post_list(request):
                     if not all([cloud_name, api_key, api_secret]):
                         logger.warning("Cloudinary not configured - skipping image upload")
                         return HttpResponse(
-                            json.dumps({'error': 'Upload de imagens temporariamente indisponível. Configure o Cloudinary primeiro.'}),
+                            json.dumps({'error': 'Upload de imagens temporariamente indisponível.'}),
                             content_type='application/json',
                             status=400
                         )
