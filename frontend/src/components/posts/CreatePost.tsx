@@ -126,7 +126,8 @@ export function CreatePost() {
                     comentários.
                   </p>
                   <p className="text-xs mt-2 text-blue-700">
-                    Exemplo: "Olá @joao, o que você acha dessa ideia?"
+                    Exemplo: &ldquo;Olá @joao, o que você acha dessa
+                    ideia?&rdquo;
                   </p>
                 </div>
               </div>

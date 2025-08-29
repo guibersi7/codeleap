@@ -52,7 +52,7 @@ export const EditModal = ({
                 <p className="font-medium mb-1">Como usar menções:</p>
                 <p>Use @username para mencionar outros usuários.</p>
                 <p className="text-xs mt-1 text-blue-700">
-                  Exemplo: "Olá @joao, o que você acha?"
+                  Exemplo: &ldquo;Olá @joao, o que você acha?&rdquo;
                 </p>
               </div>
             </div>
