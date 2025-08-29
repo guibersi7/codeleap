@@ -1,7 +1,8 @@
 import { cookies } from "next/headers";
+import { getApiBaseUrl } from "@/lib/utils";
 
-// URL hardcoded para garantir que funcione na Vercel
-const API_BASE_URL = "https://codeleap-production.up.railway.app";
+// URL base da API baseada no ambiente
+const API_BASE_URL = getApiBaseUrl();
 
 // Tipos
 export interface LoginRequest {

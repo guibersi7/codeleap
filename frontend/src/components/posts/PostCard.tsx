@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/UserContext";
 import { usePostsOptimized } from "@/hooks/usePostsOptimized";
 import { Comment, CreateCommentData, Post } from "@/types";
 import { formatTimeAgo } from "@/utils/formatTime";
+import { getImageUrl } from "@/lib/utils";
 import { Edit, Heart, MessageCircle, Send, Trash2, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { HydrationSafe } from "../HydrationSafe";
@@ -201,7 +202,7 @@ export function PostCard({ post }: PostCardProps) {
           {post.image && (
             <div className="mb-4">
               <img
-                src={post.image}
+                src={getImageUrl(post.image)}
                 alt="Post image"
                 className="max-w-full max-h-96 rounded-lg border border-gray-200"
                 loading="lazy"
