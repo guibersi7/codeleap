@@ -1,7 +1,7 @@
 import { getCookie, removeCookie, setCookie } from "@/utils/cookies";
 
 // Configuração da API
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://codeleap-production.up.railway.app";
 
 // Tipos da API
 export interface LoginRequest {
@@ -73,15 +73,23 @@ async function apiRequest<T>(
   const url = `${API_BASE_URL}${endpoint}`;
 
   const config: RequestInit = {
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
     ...options,
   };
 
+  // Adicionar Content-Type apenas se não for FormData
+  if (!(options.body instanceof FormData)) {
+    config.headers = {
+      "Content-Type": "application/json",
+      ...options.headers,
+    };
+  } else {
+    // Para FormData, usar apenas os headers fornecidos
+    config.headers = options.headers;
+  }
+
   try {
     const response = await fetch(url, config);
+
     const data = await response.json();
 
     if (!response.ok) {

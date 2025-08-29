@@ -1,20 +1,23 @@
 import axios from "axios";
-import { tokenStorage } from "./api";
+import { getCookie } from "@/utils/cookies";
 
 // Configuração base do axios
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000",
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "https://codeleap-production.up.railway.app",
+  timeout: 10000,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// Interceptor para adicionar token em todas as requisições
+// Interceptor para adicionar token de autenticação
 api.interceptors.request.use(
   (config) => {
-    const token = tokenStorage.getAccessToken();
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    if (typeof window !== "undefined") {
+      const token = getCookie("access_token");
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     return config;
   },
@@ -23,7 +26,7 @@ api.interceptors.request.use(
   }
 );
 
-// Interceptor para tratar respostas e renovar token automaticamente
+// Interceptor para renovar token automaticamente
 api.interceptors.response.use(
   (response) => {
     return response;
@@ -31,38 +34,31 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Se o erro for 401 (não autorizado) e não for uma tentativa de renovação
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
-        // Tentar renovar o token
-        const refreshToken = tokenStorage.getRefreshToken();
+        const refreshToken = getCookie("refresh_token");
         if (refreshToken) {
           const response = await axios.post(
-            `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/auth/refresh/`,
+            `${process.env.NEXT_PUBLIC_API_URL || "https://codeleap-production.up.railway.app"}/auth/refresh/`,
             { refresh: refreshToken }
           );
 
           if (response.data.success) {
-            // Atualizar o token no localStorage
-            const currentRefresh = tokenStorage.getRefreshToken();
-            if (currentRefresh) {
-              tokenStorage.setTokens(response.data.data.access, currentRefresh);
-            }
-
-            // Adicionar o novo token à requisição original
-            originalRequest.headers.Authorization = `Bearer ${response.data.data.access}`;
+            // Atualizar token no cookie
+            document.cookie = `access_token=${response.data.data.access}; path=/; max-age=3600; secure; samesite=strict`;
             
-            // Repetir a requisição original com o novo token
+            // Retry da requisição original
+            originalRequest.headers.Authorization = `Bearer ${response.data.data.access}`;
             return api(originalRequest);
           }
         }
       } catch (refreshError) {
-        // Se não conseguir renovar, fazer logout
-        tokenStorage.clearTokens();
-        window.location.href = "/welcome";
-        return Promise.reject(refreshError);
+        // Se falhar ao renovar, redirecionar para login
+        if (typeof window !== "undefined") {
+          window.location.href = "/welcome";
+        }
       }
     }
 
