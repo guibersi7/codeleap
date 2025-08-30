@@ -1,5 +1,5 @@
-import { cookies } from "next/headers";
 import { getApiBaseUrl } from "@/lib/utils";
+import { cookies } from "next/headers";
 
 // URL base da API baseada no ambiente
 const API_BASE_URL = getApiBaseUrl();
@@ -149,6 +149,27 @@ export const authApi = {
     try {
       await this.getProfile();
       return true;
+    } catch (error) {
+      return false;
+    }
+  },
+
+  // Verificar se o token é válido (versão mais leve que checkAuth)
+  async verifyToken(): Promise<boolean> {
+    try {
+      const token = await getAuthToken();
+
+      if (!token) {
+        return false;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/auth/verify/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return response.ok;
     } catch (error) {
       return false;
     }

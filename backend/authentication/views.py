@@ -188,3 +188,23 @@ def user_profile_view(request):
             'message': 'Erro ao obter perfil',
             'error': str(e) if settings.DEBUG else 'Erro interno'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+def verify_token_view(request):
+    """
+    View para verificar se o token é válido
+    Retorna apenas sucesso/erro sem dados do usuário
+    """
+    try:
+        # Se chegou até aqui, o token é válido (middleware JWT já validou)
+        return Response({
+            'success': True,
+            'message': 'Token válido'
+        }, status=status.HTTP_200_OK)
+    except Exception as e:
+        logger.error(f"Erro ao verificar token: {str(e)}")
+        return Response({
+            'success': False,
+            'message': 'Token inválido',
+            'error': str(e) if settings.DEBUG else 'Erro interno'
+        }, status=status.HTTP_401_UNAUTHORIZED)

@@ -1,13 +1,53 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-export function middleware(request: NextRequest) {
+// Função para verificar se o token é válido
+async function verifyToken(token: string): Promise<boolean> {
+  try {
+    // Definir URL da API baseada no ambiente
+    const API_BASE_URL =
+      process.env.NODE_ENV === "development"
+        ? "http://localhost:8000"
+        : "https://codeleap-production.up.railway.app";
+
+    const response = await fetch(`${API_BASE_URL}/auth/verify/`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.ok;
+  } catch (error) {
+    return false;
+  }
+}
+
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Verificar se o usuário está tentando acessar o dashboard
   if (pathname.startsWith("/dashboard")) {
-    // Em uma implementação real, você verificaria se há um token de autenticação
-    // Por enquanto, permitimos acesso direto, mas o frontend fará a verificação
+    // Verificar se há um token de acesso
+    const accessToken = request.cookies.get("access_token")?.value;
+
+    if (!accessToken) {
+      // Se não há token, redirecionar para login
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+
+    // Verificar se o token é válido
+    const isTokenValid = await verifyToken(accessToken);
+
+    if (!isTokenValid) {
+      // Se o token não é válido, redirecionar para login
+      // Limpar cookies inválidos
+      const response = NextResponse.redirect(new URL("/", request.url));
+      response.cookies.delete("access_token");
+      response.cookies.delete("refresh_token");
+      response.cookies.delete("codeleap_user");
+      return response;
+    }
+
+    // Token válido, permitir acesso
     return NextResponse.next();
   }
 
