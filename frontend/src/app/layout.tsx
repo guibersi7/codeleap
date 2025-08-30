@@ -1,3 +1,4 @@
+import { GlobalErrorBoundary } from "@/components/GlobalErrorBoundary";
 import { UserProvider } from "@/contexts/UserContext";
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
@@ -22,7 +23,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${roboto.variable} font-roboto antialiased`}>
-        <UserProvider>{children}</UserProvider>
+        <GlobalErrorBoundary>
+          <UserProvider>{children}</UserProvider>
+        </GlobalErrorBoundary>
       </body>
     </html>
   );

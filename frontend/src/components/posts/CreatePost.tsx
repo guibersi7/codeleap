@@ -20,27 +20,55 @@ export function CreatePost() {
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Verificar se é uma imagem
-      if (!file.type.startsWith("image/")) {
-        setError("Please select a valid image file");
+      // Verificar se é uma imagem (incluindo formatos do iPhone)
+      const allowedTypes = [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+        "image/heic", // Formato comum no iPhone
+        "image/heif", // Formato comum no iPhone
+      ];
+
+      if (!allowedTypes.includes(file.type.toLowerCase())) {
+        setError(
+          "Please select a valid image file (JPEG, PNG, GIF, WebP, HEIC)"
+        );
         return;
       }
 
       // Verificar tamanho (máximo 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        setError("Image size must be less than 5MB");
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        setError(
+          `Image size must be less than 5MB (current: ${(
+            file.size /
+            (1024 * 1024)
+          ).toFixed(1)}MB)`
+        );
         return;
       }
 
       setSelectedImage(file);
       setError(null);
 
-      // Criar preview
+      // Criar preview com tratamento de erro
       const reader = new FileReader();
       reader.onload = (e) => {
         setImagePreview(e.target?.result as string);
       };
-      reader.readAsDataURL(file);
+      reader.onerror = () => {
+        setError("Failed to load image preview");
+        setSelectedImage(null);
+      };
+
+      try {
+        reader.readAsDataURL(file);
+      } catch (error) {
+        setError("Failed to process image");
+        setSelectedImage(null);
+      }
     }
   };
 
@@ -192,7 +220,8 @@ export function CreatePost() {
                   ref={fileInputRef}
                   id="post-image"
                   type="file"
-                  accept="image/*"
+                  accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,image/heic,image/heif"
+                  capture="environment"
                   onChange={handleImageSelect}
                   className="hidden"
                   disabled={isPending}
@@ -221,6 +250,10 @@ export function CreatePost() {
 
               <div className="text-sm text-gray-500 mt-1">
                 📸 Selecione uma imagem para adicionar ao seu post
+                <br />
+                <span className="text-xs">
+                  Formatos suportados: JPEG, PNG, GIF, WebP, HEIC (máx. 5MB)
+                </span>
               </div>
 
               {/* Preview da imagem */}
